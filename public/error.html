@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error en Pago</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8d7da; color: #dc3545; text-align: center; }
+        .container { max-width: 600px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #dc3545; }
+        p { font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>¡Error en el Pago! ❌</h1>
+        <p>Hubo un problema al procesar tu transacción.</p>
+        <p id="errorMessageDetail"></p>
+        <p><a href="http://localhost:3000/">Volver al inicio</a></p>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const message = params.get('message');
+            if (message) {
+                document.getElementById('errorMessageDetail').textContent = decodeURIComponent(message);
+            }
+        });
+    </script>
+</body>
+</html>
