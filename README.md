@@ -1,134 +1,204 @@
-# API RESTful Ferremas
+¡Absolutamente! Aquí tienes el contenido completo del README.md listo para que lo copies y lo pegues directamente en un archivo llamado README.md en la raíz de tu repositorio de GitHub.
 
-Este repositorio contiene el código fuente del backend para el sistema **Ferremas**, implementado como una API RESTful. El proyecto está desarrollado con Node.js y el framework Express, y se conecta a una base de datos PostgreSQL. Su funcionalidad principal se centra en la gestión de productos.
+Markdown
 
-## Requisitos del Sistema
+# Ferremas-API
 
-Para la configuración y ejecución de este proyecto en su entorno local, se requieren los siguientes componentes:
+Este proyecto es una API RESTful desarrollada con Node.js y Express.js para la gestión de productos de una ferretería (`Ferremas`). Incluye funcionalidades CRUD completas para productos, integración con una base de datos PostgreSQL, y la estructura base para futuras integraciones, como un sistema de pagos (Transbank Webpay Plus) y una API de divisas.
 
-* **Node.js:** Versión 18.x o superior. Disponible para descarga en [nodejs.org](https://nodejs.org/).
-    * Verificación de instalación: `node -v` y `npm -v`.
-* **PostgreSQL:** Servidor de base de datos PostgreSQL (versión 14 o superior recomendada). Descargable desde [postgresql.org](https://www.postgresql.org/download/).
-* **pgAdmin 4:** (Opcional, pero recomendado) Herramienta gráfica para la administración de bases de datos PostgreSQL. Disponible en [pgadmin.org](https://www.pgadmin.org/download/).
-* **Postman / Insomnia:** (Opcional, pero recomendado) Clientes para la prueba de APIs RESTful.
-    * Postman: [postman.com](https://www.postman.com/downloads/)
-    * Insomnia: [insomnia.rest/download](https://insomnia.rest/download)
+El objetivo principal es proporcionar un backend robusto y fácil de usar para una aplicación de ferretería.
 
-## Configuración de la Base de Datos
+## 🚀 Características Implementadas
 
-Siga los siguientes pasos para configurar la base de datos PostgreSQL requerida por la API:
+* **API RESTful:** Endpoints bien definidos para la interacción con los recursos.
+* **Gestión de Productos (CRUD):**
+    * `GET /api/productos`: Obtener todos los productos.
+    * `GET /api/productos/:id`: Obtener un producto por su ID.
+    * `POST /api/productos`: Crear un nuevo producto.
+    * `PUT /api/productos/:id`: Actualizar un producto existente.
+    * `DELETE /api/productos/:id`: Eliminar un producto.
+* **Base de Datos PostgreSQL:** Almacenamiento persistente de los datos de productos y su historial de precios.
+* **Historial de Precios:** Cada producto guarda un registro de sus cambios de precio a lo largo del tiempo.
+* **Estructura Modular:** Organización del código en capas (Controladores, Servicios, Modelos) para una mejor mantenibilidad y escalabilidad.
+* **Manejo de Errores:** Respuestas de error estandarizadas para diferentes escenarios (ej. 400 Bad Request, 404 Not Found, 500 Internal Server Error, 409 Conflict por llaves foráneas).
+* **Configuración de Variables de Entorno:** Uso de `.env` para manejar configuraciones sensibles y específicas del entorno (ej. credenciales de DB, claves de API).
+* **Integración con Transbank Webpay Plus (Base):** Configuración y endpoints para iniciar y retornar transacciones (aunque no se haya completado el flujo completo de pago, la infraestructura está).
+* **Integración con API de Divisas (Dólar):** Endpoint para consultar el valor actual del dólar (infraestructura presente).
 
-1.  **Asegure que su servidor PostgreSQL esté instalado y en ejecución.**
+## 🛠️ Tecnologías Utilizadas
 
-2.  **Conexión a PostgreSQL:**
-    Utilice `pgAdmin 4` o la terminal (`psql`) para conectarse a su servidor PostgreSQL con un usuario que posea permisos de superusuario (ej. `postgres`).
+* **Node.js:** Entorno de ejecución JavaScript.
+* **Express.js:** Framework web para construir la API.
+* **PostgreSQL:** Sistema de gestión de base de datos relacional.
+* **`pg`:** Cliente de PostgreSQL para Node.js.
+* **`dotenv`:** Para cargar variables de entorno desde un archivo `.env`.
+* **`axios`:** Cliente HTTP para realizar peticiones a APIs externas (Transbank, API de Divisas).
+* **Transbank SDK:** Librería oficial para interactuar con Webpay Plus.
 
-3.  **Creación de la Base de Datos:**
-    Ejecute la siguiente sentencia SQL para crear la base de datos de la aplicación:
-    ```sql
-    CREATE DATABASE ferremas_db;
-    ```
+## ⚙️ Requisitos Previos
 
-4.  **Creación de un Usuario para la Aplicación:**
-    Se recomienda crear un usuario dedicado para la aplicación con privilegios específicos. Reemplace `su_contraseña_segura` con una contraseña robusta.
-    ```sql
-    CREATE USER ferremas_user WITH PASSWORD 'su_contraseña_segura';
-    ```
-    **Importante:** La contraseña definida aquí (`su_contraseña_segura`) debe coincidir con la configurada posteriormente en el archivo `.env`.
+Antes de comenzar, asegúrate de tener instalado lo siguiente:
 
-5.  **Otorgamiento de Permisos al Usuario sobre la Base de Datos:**
-    Conceda todos los privilegios al usuario `ferremas_user` sobre la base de datos `ferremas_db`:
-    ```sql
-    GRANT ALL PRIVILEGES ON DATABASE ferremas_db TO ferremas_user;
-    ```
+* **Node.js** (versión 14 o superior recomendada)
+* **npm** (Node Package Manager, viene con Node.js)
+* **PostgreSQL** (versión 10 o superior recomendada)
+* Un cliente de PostgreSQL (como **pgAdmin**, **DBeaver** o la consola `psql`) para gestionar tu base de datos.
+* **Git** (opcional, para clonar el repositorio)
+* **Postman** (o similar, para probar los endpoints de la API)
 
-6.  **Importación del Esquema y Datos Iniciales:**
-    Este proyecto incluye el archivo `db_dump.sql` dentro de la carpeta `database/`, el cual contiene la estructura completa de la base de datos (tablas, secuencias, etc.) y datos iniciales de ejemplo.
+## 🚀 Pasos para la Configuración y Ejecución
 
-    **Desde la terminal (PowerShell o CMD):**
-    Navegue a la carpeta raíz de su proyecto `Ferremas-API` (ej. `C:\Users\su_usuario\Proyecto\Ferremas-API`).
-    Luego, ejecute el siguiente comando para importar el archivo. Si `psql` no es reconocido directamente, utilice la ruta completa al ejecutable (ej. `"C:\Program Files\PostgreSQL\17\bin\psql.exe"`).
+Sigue estos pasos para poner en marcha el proyecto en tu máquina local.
 
-    ```powershell
-    # Comando recomendado para PowerShell:
-    & "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U ferremas_user -d ferremas_db -f ./database/db_dump.sql
+### 1. Clonar el Repositorio (Opcional si ya tienes los archivos)
 
-    # Si utiliza CMD o Git Bash y 'psql' está en su PATH:
-    # psql -U ferremas_user -d ferremas_db -f ./database/db_dump.sql
-    ```
-    El sistema le solicitará la contraseña del usuario `ferremas_user`. Ingrésela y presione Enter (la entrada de contraseña no será visible por seguridad).
+Si no tienes los archivos, clona el repositorio desde GitHub:
 
-    **Desde pgAdmin 4:**
-    * Conéctese a la base de datos `ferremas_db` en pgAdmin.
-    * Haga clic derecho sobre `ferremas_db` y seleccione `Query Tool`.
-    * En la barra de herramientas de la "Query Tool", ubique el ícono de "abrir archivo".
-    * Navegue hasta la carpeta `database/` dentro de su proyecto y seleccione el archivo `db_dump.sql`.
-    * Haga clic en el botón "Execute/Refresh" para ejecutar todas las sentencias SQL contenidas.
+```bash
+git clone https://github.com/gaspar2702/ferremas
+cd Ferremas-API
+```
+2. Instalar Dependencias
+Navega al directorio raíz del proyecto (Ferremas-API) y ejecuta el siguiente comando para instalar todas las dependencias necesarias:
 
-7.  **Verificación y Ajuste de Permisos Adicionales (Opcional - Resolución de Problemas):**
-    Si la API encuentra errores de "permiso denegado" al interactuar con la base de datos después de la importación, ejecute los siguientes comandos en la "Query Tool" de `ferremas_db` utilizando un usuario con privilegios de superusuario (ej. `postgres`):
-    ```sql
-    -- Otorgar permisos a todas las tablas y secuencias existentes en el esquema 'public'
-    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ferremas_user;
-    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ferremas_user;
+Bash
 
-    -- Configurar permisos por defecto para futuras tablas y secuencias
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ferremas_user;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ferremas_user;
-    ```
+npm install
+3. Configurar la Base de Datos PostgreSQL
+3.1. Crear la Base de Datos
+Abre tu cliente de PostgreSQL (ej. pgAdmin, psql) y crea una nueva base de datos. Puedes llamarla ferremas_db o el nombre que prefieras.
 
-## Instalación de Dependencias del Proyecto
+SQL
 
-1.  **Navegación al Directorio del Proyecto:**
-    Abra su terminal y navegue a la carpeta raíz de su proyecto `Ferremas-API`:
-    ```bash
-    cd C:\Users\su_usuario\Proyecto\Ferremas-API
-    ```
-    (Asegúrese de reemplazar `C:\Users\su_usuario\Proyecto\Ferremas-API` con la ruta real de su proyecto).
+CREATE DATABASE ferremas_db;
+3.2. Configurar el Archivo .env
+Crea un archivo llamado .env en la raíz de tu proyecto (Ferremas-API/.env). Este archivo contendrá las credenciales de tu base de datos y las claves para las integraciones externas.
 
-2.  **Instalación de Dependencias:**
-    Ejecute el siguiente comando para instalar todas las librerías de Node.js requeridas por el proyecto:
-    ```bash
-    npm install
-    ```
+Ejemplo de .env:
 
-## Configuración de Variables de Entorno
+DB_USER=tu_usuario_pg
+DB_HOST=localhost
+DB_DATABASE=ferremas_db
+DB_PASSWORD=tu_contraseña_pg
+DB_PORT=5432
 
-El proyecto utiliza variables de entorno para la configuración de la base de datos, lo cual es una práctica recomendada por seguridad y flexibilidad.
+# Configuración de Transbank (para pruebas, usa las claves de integración)
+# Puedes obtener estas claves en el portal de Transbank Developers
+TRANSBANK_COMMERCE_CODE=597055555532
+TRANSBANK_API_KEY=597055555532
 
-1.  **Creación del archivo `.env`:**
-    En la raíz de su proyecto (`Ferremas-API`), cree un nuevo archivo denominado `.env`.
+# URL de la API de Divisas (ejemplo)
+API_DOLAR_URL=[https://mindicador.cl/api/dolar](https://mindicador.cl/api/dolar)
+Asegúrate de reemplazar tu_usuario_pg y tu_contraseña_pg con tus credenciales de PostgreSQL.
+Las claves de Transbank (TRANSBANK_COMMERCE_CODE, TRANSBANK_API_KEY) que se muestran son para el ambiente de pruebas. Si pasas a producción, deberás usar tus claves reales.
+3.3. Cargar el Esquema y Datos Iniciales
+El proyecto incluye un archivo db_dump.sql con el esquema de la base de datos y algunos datos de ejemplo. Utiliza tu cliente de PostgreSQL para restaurar este archivo en la base de datos que acabas de crear (ferremas_db).
 
-2.  **Adición de Credenciales:**
-    Copie el contenido del archivo `.env.example` (incluido en el repositorio) y péguelo en su nuevo archivo `.env`. Posteriormente, **reemplace los valores de ejemplo** con sus credenciales reales de PostgreSQL y el puerto de escucha de la API:
+Ejemplo usando psql (desde la terminal):
 
-    ```env
-    # Variables de entorno para la configuración de la base de datos PostgreSQL
-    DB_USER=ferremas_user           # Usuario de PostgreSQL creado (ej. ferremas_user)
-    DB_PASSWORD=su_contraseña_segura_aqui # Contraseña del usuario de PostgreSQL
-    DB_HOST=localhost               # Dirección del servidor de PostgreSQL (generalmente localhost)
-    DB_NAME=ferremas_db             # Nombre de la base de datos creada (ferremas_db)
-    DB_PORT=5432                    # Puerto de PostgreSQL (por defecto 5432)
+Asegúrate de estar en el directorio Ferremas-API/database/.
 
-    # Puerto en el que la API escuchará las solicitudes
-    PORT=3000
-    ```
-    **Verificación:** Es crucial que `DB_PASSWORD` coincida exactamente con la contraseña utilizada al crear el usuario `ferremas_user` en la base de datos.
+Bash
 
-## Ejecución del Servidor
+psql -U tu_usuario_pg -d ferremas_db -h localhost -p 5432 -f db_dump.sql
+Reemplaza tu_usuario_pg y ferremas_db con tus datos.
+Si el archivo db_dump.sql no está en la carpeta database, ajusta la ruta.
+4. Iniciar el Servidor
+Una vez que las dependencias están instaladas y la base de datos configurada, puedes iniciar la aplicación:
 
-Una vez que todas las dependencias estén instaladas y las variables de entorno configuradas, puede iniciar el servidor de la API:
+Bash
 
-1.  **Inicio del Servidor:**
-    Desde la terminal, en la raíz del proyecto, ejecute:
-    ```bash
-    node app.js
-    ```
+npm start
+Verás mensajes en la consola indicando que el servidor está escuchando en el puerto 3000 y las URLs de los endpoints principales.
 
-2.  **Verificación de Estado:**
-    Si la configuración es correcta, observará mensajes en la consola indicando la conexión exitosa a la base de datos y que el servidor está escuchando en el puerto configurado:
-    ```
-    Conexión a PostgreSQL establecida correctamente.
-    Servidor escuchando en el puerto 3000
-    Accede a la API de Productos en: http://localhost:3000/api/productos
-    ```
+--- Configuración de Transbank (desde process.env) ---
+TRANSBANK_COMMERCE_CODE (usado): 597055555532
+TRANSBANK_API_KEY (usada): 597055555532
+Ambiente Transbank (SDK): [https://webpay3gint.transbank.cl](https://webpay3gint.transbank.cl)
+----------------------------------------------------
+Servidor escuchando en el puerto 3000
+Accede al formulario de pago Transbank en: http://localhost:3000/
+API de Productos en: http://localhost:3000/api/productos
+Endpoint para iniciar pagos Webpay: http://localhost:3000/api/webpay/init (POST)
+Endpoint de retorno Webpay: http://localhost:3000/webpay/return (GET/POST)
+Endpoint para valor del Dólar: http://localhost:3000/api/divisas/dolar (GET)
+Conexión a PostgreSQL establecida correctamente.
+🧪 Prueba de Endpoints con Postman
+Abre Postman e importa la colección de tu API si la tienes, o crea las solicitudes manualmente.
+
+Productos
+GET All Products
+
+GET http://localhost:3000/api/productos
+Response: 200 OK (Array de productos)
+GET Product by ID
+
+GET http://localhost:3000/api/productos/1 (o cualquier ID existente)
+Response: 200 OK (Objeto de producto)
+Response (Producto no encontrado): 404 Not Found
+Add Product
+
+POST http://localhost:3000/api/productos
+Headers: Content-Type: application/json
+Body (raw, JSON):
+JSON
+
+{
+    "nombre": "Martillo Clásico",
+    "descripcion": "Martillo de alta calidad para construcción.",
+    "categoria": "Herramientas Manuales",
+    "marca": "ToolMaster",
+    "codigoFerremas": "FM-001",
+    "codigoFabricante": "TM-H001",
+    "precio": 15000,
+    "stockDisponible": 50
+}
+Response: 201 Created
+Update Product
+
+PUT http://localhost:3000/api/productos/1 (usa un ID existente)
+Headers: Content-Type: application/json
+Body (raw, JSON - puedes enviar solo los campos a actualizar):
+JSON
+
+{
+    "precio": 16500,
+    "stockDisponible": 48
+}
+Response: 200 OK
+Response (Producto no encontrado): 404 Not Found
+Response (Datos inválidos): 400 Bad Request
+Delete Product
+
+DELETE http://localhost:3000/api/productos/1 (usa un ID existente)
+⚠️ Importante: Si el producto tiene relaciones con la tabla inventario (o cualquier otra tabla con llave foránea), recibirás un error 409 Conflict. Primero, debes eliminar las entradas relacionadas en la tabla inventario manualmente en tu base de datos para poder eliminar el producto.
+SQL de ejemplo para eliminar dependencias:
+SQL
+
+DELETE FROM inventario WHERE productoid = 1; -- Reemplaza 1 con el ID del producto
+Response (Éxito): 200 OK
+Response (Producto no encontrado): 404 Not Found
+Response (Conflicto por llave foránea): 409 Conflict
+Webpay (Pagos Transbank)
+Iniciar Transacción
+
+POST http://localhost:3000/api/webpay/init
+Headers: Content-Type: application/json
+Body (raw, JSON):
+JSON
+
+{
+    "amount": 19990,
+    "buyOrder": "orden-12345",
+    "sessionId": "sesion-abcde"
+}
+Response: JSON con url y token para redirigir al usuario a Transbank.
+Posibles Errores: 401 Not Authorized si las claves de Transbank no son válidas.
+Retorno de Transacción (GET/POST)
+
+Este endpoint es manejado automáticamente por Transbank después de que el usuario completa el pago en su plataforma. No necesitas probarlo directamente desde Postman.
+GET/POST http://localhost:3000/webpay/return
+Divisas
+Obtener Valor del Dólar
+GET http://localhost:3000/api/divisas/dolar
+Response: 200 OK (JSON con el valor del dólar)
