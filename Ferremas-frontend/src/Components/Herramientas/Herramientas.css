@@ -1,0 +1,5 @@
+.tools-section { padding: 30px 40px; }
+.tools-header { text-align: center; margin-bottom: 30px; }
+.tools-header h2 { font-size: 32px; margin-bottom: 5px; }
+.tools-header p { font-size: 16px; color: #666; }
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }

@@ -1,69 +1,102 @@
-# Ferremas-API
+# Ferremas - Proyecto Full-Stack E-Commerce
 
-Este proyecto es una API RESTful desarrollada con Node.js y Express.js para la gestión de productos de una ferretería (`Ferremas`). Incluye funcionalidades CRUD completas para productos, integración con una base de datos PostgreSQL, y la estructura base para futuras integraciones, como un sistema de pagos (Transbank Webpay Plus) y una API de divisas (Banco Central de Chile).
+## 1. Visión General del Proyecto
 
-El objetivo principal es proporcionar un backend robusto y fácil de usar para una aplicación de ferretería.
+Este es un proyecto full-stack que simula una tienda de comercio electrónico para la ferretería "Ferremas". La aplicación consta de un **front-end** interactivo construido con React y un **back-end** robusto construido con Node.js y Express, conectado a una base de datos PostgreSQL.
 
-## 🚀 Características Implementadas
+El objetivo es proporcionar una experiencia de compra fluida, permitiendo a los usuarios ver productos, filtrarlos, añadirlos a un carrito y simular un proceso de compra completo que afecta directamente al inventario en la base de datos.
 
-* **API RESTful:** Endpoints bien definidos para la interacción con los recursos.
-* **Gestión de Productos (CRUD):**
-    * `GET /api/productos`: Obtener todos los productos.
-    * `GET /api/productos/:id`: Obtener un producto por su ID.
-    * `POST /api/productos`: Crear un nuevo producto.
-    * `PUT /api/productos/:id`: Actualizar un producto existente.
-    * `DELETE /api/productos/:id`: Eliminar un producto.
-* **Base de Datos PostgreSQL:** Almacenamiento persistente de los datos de productos y su historial de precios.
-* **Historial de Precios:** Cada producto guarda un registro de sus cambios de precio a lo largo del tiempo.
-* **Estructura Modular:** Organización del código en capas (Controladores, Servicios, Modelos) para una mejor mantenibilidad y escalabilidad.
-* **Manejo de Errores:** Respuestas de error estandarizadas para diferentes escenarios (ej. 400 Bad Request, 404 Not Found, 500 Internal Server Error, 409 Conflict por llaves foráneas).
-* **Configuración de Variables de Entorno:** Uso de `.env` para manejar configuraciones sensibles y específicas del entorno (ej. credenciales de DB, claves de API).
-* **Integración con Transbank Webpay Plus (Base):** Configuración y endpoints para iniciar y retornar transacciones (la infraestructura está lista).
-* **Integración con API del Banco Central de Chile (BCCh):** Endpoint para consultar el valor actual del dólar.
+## 2. Características Implementadas
 
-## 🛠️ Tecnologías Utilizadas
+* **Catálogo de Productos:** El front-end carga y muestra dinámicamente los productos desde la base de datos a través de la API.
+* **Filtro por Categorías:** Un menú desplegable permite a los usuarios filtrar los productos por categoría.
+* **Búsqueda de Productos:** Una barra de búsqueda funcional permite filtrar productos por texto en su nombre o descripción.
+* **Gestión de Stock Visual:** Cada producto muestra su stock disponible, el cual disminuye visualmente en tiempo real cuando un producto es agregado al carrito.
+* **Carrito de Compras Interactivo:**
+    * Añadir productos al carrito.
+    * Ver los productos en una página de carrito dedicada.
+    * Modificar cantidades y eliminar productos desde el carrito.
+    * Ver el total de la compra calculado en tiempo real.
+* **Simulación de Flujo de Pago:**
+    * Una página de "Checkout" que resume la compra.
+    * Un botón de "Confirmar Compra" que se comunica con el back-end.
+    * El back-end **simula un pago exitoso** y actualiza el stock en la base de datos PostgreSQL.
+    * El front-end se actualiza para reflejar el nuevo stock después de la compra.
 
-* **Node.js:** Entorno de ejecución JavaScript.
-* **Express.js:** Framework web para construir la API.
-* **PostgreSQL:** Sistema de gestión de base de datos relacional.
-* **`pg`:** Cliente de PostgreSQL para Node.js.
-* **`dotenv`:** Para cargar variables de entorno desde un archivo `.env`.
-* **`axios`:** Cliente HTTP para realizar peticiones a APIs externas (Transbank, API del Banco Central de Chile).
-* **Transbank SDK:** Librería oficial para interactuar con Webpay Plus.
+## 3. Arquitectura y Tecnologías
 
-## ⚙️ Requisitos Previos
+El proyecto está dividido en dos partes principales que se ejecutan de forma independiente:
 
-Antes de comenzar, asegúrate de tener instalado lo siguiente:
+#### Back-End
+* **Runtime:** Node.js
+* **Framework:** Express.js para crear la API RESTful.
+* **Base de Datos:** PostgreSQL para el almacenamiento persistente de datos.
+* **Conector de DB:** `pg` (node-postgres).
+* **Gestión de Entorno:** Archivo `.env` para variables sensibles (credenciales de DB).
+* **Estructura:** Modular en Capas (Rutas -> Controladores -> Servicios -> Modelos).
 
-* **Node.js** (versión 14 o superior recomendada)
-* **npm** (Node Package Manager, viene con Node.js)
-* **PostgreSQL** (versión 10 o superior recomendada)
-* Un cliente de PostgreSQL (como **pgAdmin**, **DBeaver** o la consola `psql`) para gestionar tu base de datos.
-* **Git** (opcional, para clonar el repositorio)
-* **Postman** (o similar, para probar los endpoints de la API)
+#### Front-End
+* **Librería:** React (usando Vite para el entorno de desarrollo).
+* **Lenguaje:** JavaScript con JSX.
+* **Gestión de Estado Global:** React Context API (`CartContext`) para manejar el estado del carrito, la lista de productos y los filtros de manera global.
+* **Routing:** `react-router-dom` para la navegación entre páginas.
+* **Llamadas a la API:** `axios` para la comunicación con el back-end.
+* **Estilos:** Archivos `.css` modulares por componente.
 
-```bash
-git clone https://github.com/gaspar2702/ferremas
-cd Ferremas-API
-```
-## ⚙️ Credenciales necesarias(vistas tambien en .env)
-```bash
-# Configuración de la Base de Datos PostgreSQL
-DB_USER=postgres
-DB_PASSWORD=FerremasUser
-DB_HOST=localhost
-DB_NAME=ferremas_db
-DB_PORT=5432
+---
 
-# Puerto de la aplicación Node.js
-PORT=3000
+## 4. Instalación y Puesta en Marcha
 
-# Variables de Transbank (Ambiente de Integración)
-TRANSBANK_ENVIRONMENT="INTEGRACION"
-TRANSBANK_COMMERCE_CODE=597055555532
-TRANSBANK_API_KEY=597055555532
+Para ejecutar el proyecto completo en un entorno de desarrollo local, necesitas tener ambos servidores (back-end y front-end) corriendo al mismo tiempo.
 
-# Credenciales para la API del Banco Central de Chile (BDE)
-BCCH_USER=ben.sotoa@duocuc.cl
-BCCH_PASS=Ferremas123
-```
+### Requisitos Previos
+* Node.js (versión 14 o superior)
+* PostgreSQL (versión 10 o superior)
+* Un cliente de base de datos como **pgAdmin**
+
+### A. Configuración del Back-End
+
+1.  **Clonar/Descargar el Repositorio:** Asegúrate de tener la carpeta del proyecto `ferremas-main`.
+
+2.  **Configurar la Base de Datos:**
+    * Inicia tu servidor de PostgreSQL (una forma fácil es abriendo **pgAdmin**).
+    * En pgAdmin, crea una nueva base de datos vacía llamada **`ferremas_db`**.
+    * Crea el rol de usuario necesario. Haz clic derecho en "Login/Group Roles" -> Create -> Role.
+        * Nombre: `ferremas_user`
+        * Pestaña "Definition": establece una contraseña.
+        * Pestaña "Privileges": asegúrate de que "Can log in?" esté en "Yes".
+    * Ejecuta el script `database/db_dump.sql` sobre la base de datos `ferremas_db` usando la "Query Tool" de pgAdmin para crear todas las tablas y datos iniciales.
+
+3.  **Configurar las Variables de Entorno:**
+    * En la raíz del proyecto `ferremas-main`, crea un archivo llamado `.env`.
+    * Copia y pega el siguiente contenido, **asegurándote de que `DB_PASSWORD` coincida con la contraseña que tú estableciste para el usuario `postgres`**.
+
+    ```dotenv
+    # Configuración de la Base de Datos PostgreSQL
+    DB_USER=postgres
+    DB_PASSWORD=terry123
+    DB_HOST=localhost
+    DB_NAME=ferremas_db
+    DB_PORT=5432
+
+    # Puerto de la aplicación Node.js
+    PORT=3000
+    ```
+
+4.  **Instalar Dependencias y Ejecutar:**
+    * Abre una terminal en la carpeta `ferremas-main`.
+    * Ejecuta `npm install` para instalar todos los paquetes.
+    * Inicia el servidor con `node app.js`.
+    * Deberías ver el mensaje `Servidor escuchando en el puerto 3000`. ¡Deja esta terminal abierta!
+
+### B. Configuración del Front-End
+
+1.  **Abrir el Proyecto:** En una **segunda ventana de Visual Studio Code**, abre la carpeta de tu proyecto de front-end.
+
+2.  **Instalar Dependencias y Ejecutar:**
+    * Abre una nueva terminal integrada en esta ventana.
+    * Ejecuta `npm install` para instalar todos los paquetes de React.
+    * Inicia el servidor de desarrollo con `npm run dev`.
+    * Deberías ver una URL local, usualmente `http://localhost:5173`.
+
+¡Y listo! Con ambos servidores corriendo, abre la URL del front-end en tu navegador y la aplicación debería funcionar completamente, cargando los datos desde tu base de datos local.
