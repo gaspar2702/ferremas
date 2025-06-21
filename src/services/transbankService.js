@@ -1,66 +1,40 @@
+const { WebpayPlus, Options, Environment } = require('transbank-sdk');
 
-const { WebpayPlus } = require('transbank-sdk'); 
-const Environment = require('transbank-sdk').Environment; 
+const commerceCode = process.env.WEBPAY_COMMERCE_CODE?.trim();
+const apiKey = process.env.WEBPAY_API_KEY?.trim();
 
-const TBK_COMMERCE_CODE = process.env.TRANSBANK_COMMERCE_CODE;
-const TBK_API_KEY = process.env.TRANSBANK_API_KEY;
+// Verificación crítica de las credenciales al iniciar
+if (!commerceCode || !apiKey) {
+  console.error('¡ERROR CRÍTICO! Las variables de Transbank no están en tu archivo .env.');
+  console.error('Asegúrate de que .env contenga WEBPAY_COMMERCE_CODE y WEBPAY_API_KEY.');
+  throw new Error('Credenciales de Transbank no encontradas.');
+}
 
-
-console.log('--- Configuración de Transbank (desde process.env) ---');
-console.log('TRANSBANK_COMMERCE_CODE (usado):', TBK_COMMERCE_CODE);
-console.log('TRANSBANK_API_KEY (usada):', TBK_API_KEY);
-console.log('Ambiente Transbank (SDK):', Environment.Integration);
-console.log('----------------------------------------------------');
-
-
-
-const tx = new WebpayPlus.Transaction({
-    environment: Environment.Integration, 
-    commerceCode: TBK_COMMERCE_CODE,     
-    apiKey: TBK_API_KEY                  
-});
-
+const tx = new WebpayPlus.Transaction(new Options(commerceCode, apiKey, Environment.Integration));
 
 async function iniciarTransaccionWebpay(buyOrder, sessionId, amount, returnUrl) {
-    try {
-        
-        if (!buyOrder || !sessionId || !amount || amount <= 0 || !returnUrl) {
-            throw new Error('Faltan parámetros obligatorios para iniciar la transacción de Webpay (buyOrder, sessionId, amount > 0, returnUrl).');
-        }
+  try {
+    console.log('--- Intentando crear transacción en Transbank ---');
+    console.log(`Usando Commerce Code: [${commerceCode}]`);
+    const response = await tx.create(buyOrder, sessionId, amount, returnUrl);
+    return response;
+  } catch (error) {
+    console.error('❌ Error en el servicio al crear la transacción:', error.message);
+    throw error; // Lanzamos el error para que el controlador lo maneje
+  }
+}
 
-        console.log('Intentando iniciar transacción con Transbank con los siguientes parámetros:');
-        console.log('buyOrder:', buyOrder);
-        console.log('sessionId:', sessionId);
-        console.log('amount:', amount);
-        console.log('returnUrl:', returnUrl); 
-
-        
-        const response = await tx.create(
-            buyOrder,
-            sessionId,
-            amount,
-            returnUrl
-        );
-
-        
-        return {
-            token: response.token,
-            url: response.url
-        };
-
-    } catch (error) {
-        console.error('Error al iniciar la transacción Webpay:', error);
-        
-        if (error.response && error.response.data) {
-            console.error('Detalle de la respuesta HTTP de Transbank (error.response.data):', error.response.data);
-        }
-        if (error.tbkDetails) { 
-            console.error('Detalles del error de Transbank (error.tbkDetails):', error.tbkDetails);
-        }
-        throw new Error('No se pudo iniciar la transacción con Transbank. ' + (error.message || 'Error desconocido.'));
-    }
+async function confirmarTransaccionWebpay(token) {
+  try {
+    const response = await tx.commit(token);
+    return response;
+  } catch (error) {
+    console.error('❌ Error en el servicio al confirmar la transacción:', error.message);
+    throw error;
+  }
 }
 
 module.exports = {
-    iniciarTransaccionWebpay
+  iniciarTransaccionWebpay,
+  confirmarTransaccionWebpay
 };
