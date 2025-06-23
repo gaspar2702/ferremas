@@ -12,27 +12,33 @@ export const CartProvider = ({ children }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Efecto para cargar/filtrar productos
-  useEffect(() => {
-    const fetchProducts = async () => {
+  // --- LÓGICA PARA CARGAR Y RECARGAR PRODUCTOS ---
+  const refetchProducts = async () => {
+    try {
       const params = new URLSearchParams();
-      if (selectedCategory) params.append('categoria', selectedCategory);
-      if (searchTerm) params.append('search', searchTerm);
+      if (selectedCategory) {
+        params.append('categoria', selectedCategory);
+      }
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
       
       const url = `http://localhost:3000/api/productos?${params.toString()}`;
-      try {
-        const response = await axios.get(url);
-        // Aseguramos que los datos del back-end se mapeen a 'stock' para consistencia
-        const productsWithStock = response.data.map(p => ({...p, stock: p.stockdisponible}));
-        setProducts(productsWithStock);
-      } catch (error) {
-        console.error('Error al obtener los productos:', error);
-      }
-    };
-    fetchProducts();
-  }, [selectedCategory, searchTerm]);
+      const response = await axios.get(url);
 
-  // Efecto para cargar categorías
+      // Mapeamos los datos para consistencia en el front-end
+      const productsWithStock = response.data.map(p => ({
+        ...p,
+        stock: p.stockdisponible !== undefined ? p.stockdisponible : 0
+      }));
+      setProducts(productsWithStock);
+
+    } catch (error) {
+      console.error('Error al obtener los productos:', error);
+    }
+  };
+
+  // useEffect para la carga inicial de categorías
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -44,13 +50,19 @@ export const CartProvider = ({ children }) => {
     };
     fetchCategories();
   }, []);
+
+  // useEffect para recargar los productos cuando cambian los filtros
+  useEffect(() => {
+    refetchProducts();
+  }, [selectedCategory, searchTerm]);
   
   // --- LÓGICA COMPLETA Y FUNCIONAL PARA EL CARRITO CON MANEJO DE STOCK ---
 
   const addToCart = (productToAdd) => {
     const productInList = products.find(p => p.productoid === productToAdd.productoid);
+    
+    // Verificamos si hay stock del producto en la lista general
     if (productInList && productInList.stock > 0) {
-      // Lógica para añadir al carrito
       setCartItems(prevItems => {
         const itemExists = prevItems.find(item => item.productoid === productToAdd.productoid);
         if (itemExists) {
@@ -60,7 +72,8 @@ export const CartProvider = ({ children }) => {
         }
         return [...prevItems, { ...productToAdd, quantity: 1 }];
       });
-      // Lógica para disminuir el stock en la lista de productos
+
+      // Disminuimos el stock en la lista de productos del front-end
       setProducts(prevProducts =>
         prevProducts.map(p =>
           p.productoid === productToAdd.productoid ? { ...p, stock: p.stock - 1 } : p
@@ -73,7 +86,6 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = (productId) => {
     let itemInCart;
-    // Quitamos el item del carrito
     const newCartItems = cartItems.filter(item => {
       if (item.productoid === productId) {
         itemInCart = item;
@@ -83,7 +95,6 @@ export const CartProvider = ({ children }) => {
     });
     setCartItems(newCartItems);
 
-    // Devolvemos el stock a la lista de productos si encontramos el item
     if (itemInCart) {
       setProducts(prevProducts =>
         prevProducts.map(p =>
@@ -95,35 +106,37 @@ export const CartProvider = ({ children }) => {
 
   const decreaseQuantity = (productId) => {
     let itemRemovedCompletely = false;
-    // Disminuimos la cantidad o marcamos para eliminar
     const newCartItems = cartItems.map(item => {
       if (item.productoid === productId) {
         if (item.quantity > 1) {
           return { ...item, quantity: item.quantity - 1 };
         } else {
-          itemRemovedCompletely = true; // Se va a eliminar
+          itemRemovedCompletely = true;
           return null;
         }
       }
       return item;
-    }).filter(Boolean); // Limpiamos los nulos
+    }).filter(Boolean);
 
     setCartItems(newCartItems);
-    
-    // Devolvemos 1 al stock solo si el producto se eliminó por completo
-    if (itemRemovedCompletely) {
-        removeFromCart(productId) // Llamamos a la función principal de remover
+
+    if (!itemRemovedCompletely) {
+       setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.productoid === productId ? { ...p, stock: p.stock + 1 } : p
+        )
+      );
     } else {
-         setProducts(prevProducts =>
-            prevProducts.map(p =>
-              p.productoid === productId ? { ...p, stock: p.stock + 1 } : p
-            )
-        );
+
+       setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.productoid === productId ? { ...p, stock: p.stock + 1 } : p
+        )
+      );
     }
   };
   
   const clearCart = () => {
-    // Devolvemos todo el stock de los productos del carrito
     setProducts(prevProducts => {
       return prevProducts.map(p => {
         const itemInCart = cartItems.find(item => item.productoid === p.productoid);
@@ -133,7 +146,6 @@ export const CartProvider = ({ children }) => {
         return p;
       });
     });
-    // Vaciamos el array del carrito
     setCartItems([]);
   };
   
@@ -142,6 +154,7 @@ export const CartProvider = ({ children }) => {
     selectedCategory, setSelectedCategory,
     searchTerm, setSearchTerm,
     addToCart, removeFromCart, decreaseQuantity, clearCart,
+    refetchProducts
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
