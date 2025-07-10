@@ -1,47 +1,47 @@
-const pool = require('../../config/database'); // Necesitamos la conexión a la DB
+const pool = require('../../config/database');
 
 async function procesarCompra(req, res) {
-  // Recibimos la lista de items y el total desde el front-end
-  const { items, total } = req.body;
+  // Ahora también recibimos el sucursalId desde el front-end
+  const { items, total, sucursalId } = req.body;
 
   if (!items || items.length === 0) {
     return res.status(400).json({ error: 'El carrito está vacío.' });
   }
+  if (!sucursalId) {
+    return res.status(400).json({ error: 'No se ha especificado una sucursal.' });
+  }
 
-  const client = await pool.connect(); // Nos conectamos a la DB
+  const client = await pool.connect();
 
   try {
     await client.query('BEGIN'); // Iniciamos una transacción para seguridad
 
-    // Recorremos cada item del carrito para actualizar su stock
     for (const item of items) {
+      // CORRECCIÓN: La consulta ahora actualiza la tabla 'inventario'
+      // y usa tanto el productoid como el sucursalid para ser específico.
       const query = `
-        UPDATE productos 
+        UPDATE inventario 
         SET stockdisponible = stockdisponible - $1 
-        WHERE productoid = $2 AND stockdisponible >= $1
+        WHERE productoid = $2 AND sucursalid = $3 AND stockdisponible >= $1
       `;
-      const result = await client.query(query, [item.quantity, item.productoid]);
-
-      // Si ninguna fila fue afectada, significa que no había stock suficiente
+      const result = await client.query(query, [item.quantity, item.productoid, sucursalId]);
+      
       if (result.rowCount === 0) {
-        throw new Error(`Stock insuficiente para el producto: ${item.nombre}`);
+        throw new Error(`Stock insuficiente para el producto: ${item.nombre} en la sucursal seleccionada.`);
       }
     }
-
-    // Aquí también se insertaría el registro del pedido en una tabla 'pedidos'
-    // ... (lógica futura) ...
-
-    await client.query('COMMIT'); // Confirmamos todos los cambios en la DB
-
-    console.log('✅ Stock actualizado correctamente en la base de datos.');
+    
+    await client.query('COMMIT'); 
+    
+    console.log(`✅ Stock actualizado correctamente en la base de datos para la sucursal ${sucursalId}.`);
     res.status(200).json({ message: 'Compra simulada y stock actualizado exitosamente.' });
 
   } catch (error) {
-    await client.query('ROLLBACK'); // Si algo falla, revertimos todos los cambios
+    await client.query('ROLLBACK');
     console.error('❌ Error al procesar la compra:', error.message);
     res.status(500).json({ error: 'No se pudo procesar la compra.', details: error.message });
   } finally {
-    client.release(); // Liberamos la conexión a la DB
+    client.release();
   }
 }
 

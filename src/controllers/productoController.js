@@ -1,13 +1,13 @@
 const productoService = require('../services/productoService');
 
 // --- FUNCIÓN MODIFICADA ---
-// Ahora lee 'categoria' y 'search' desde los parámetros de la URL
+// Ahora lee 'categoria', 'search' y el nuevo 'sucursalId' desde los parámetros de la URL
 async function getAllProductos(req, res) {
     try {
-        // Leemos tanto 'categoria' como el nuevo 'search' desde los query params
-        const { categoria, search } = req.query; 
-        // Pasamos ambos parámetros al servicio
-        const productos = await productoService.getAllProductos(categoria, search);
+        // Leemos todos los posibles filtros desde los query params
+        const { categoria, search, sucursalId } = req.query; 
+        // Pasamos todos los parámetros al servicio
+        const productos = await productoService.getAllProductos(categoria, search, sucursalId);
         res.status(200).json(productos);
     } catch (error) {
         console.error('Error en productoController.getAllProductos:', error);
@@ -15,8 +15,8 @@ async function getAllProductos(req, res) {
     }
 }
 
-// --- ¡NUEVA FUNCIÓN AÑADIDA! --- (Ya la teníamos, se queda igual)
 async function getAllCategorias(req, res) {
+// ... (esta función no necesita cambios)
     try {
         const categorias = await productoService.getAllCategorias();
         res.status(200).json(categorias);
@@ -138,7 +138,6 @@ async function deleteProducto(req, res) {
     }
 }
 
-// --- EXPORTS ACTUALIZADO ---
 module.exports = {
     getAllProductos,
     getProductoById,
